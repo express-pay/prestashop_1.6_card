@@ -1,0 +1,48 @@
+p#expresspay_card_payment_module a{
+    padding: 10px 10px 10px 0px;
+}
+p#expresspay_card_payment_module a::after{
+    display: block;
+    content: "\f054";
+    position: absolute;
+    right: 15px;
+    margin-top: -11px;
+    top: 50%;
+    font-family: "FontAwesome";
+    font-size: 25px;
+    height: 22px;
+    width: 14px;
+    color: #777;
+}
+
+
+p#expresspay_card_payment_module a img{
+    margin: 10px 15px 10px 15px; 
+    width:75px;
+}
+
+
+div.expresspay_card_confirm
+{
+    border: 1px solid black;
+    border-radius: 6px;
+    padding: 20px;
+    width:100%;
+    margin: 0;
+}
+
+div.expresspay_card_navigation
+{
+    margin-top: 25px;
+}
+
+div.expresspay_card_navigation .button
+{
+    padding: 7px;
+}
+
+form.expresspay_card_confirm_form img
+{
+    width:75px;
+    margin-left: 25px;
+}
