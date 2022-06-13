@@ -14,16 +14,17 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 	public function initContent()
 	{
 		$this->display_column_left  = false;
-		$this->display_column_right = false;
+        $this->display_column_right = false;
 
-		parent::initContent();
+        parent::initContent();
 
-		$control = (int) Tools::getValue('control');
+        $control = (int) Tools::getValue('control');
 		$cart    = $this->context->cart;
 
 		$config = json_decode(Configuration::get("EXPRESSPAY_CARD_CONFIG"), true);
 
-		if (!$this->validation_currency()) {
+		if(!$this->validation_currency())
+		{
 			$this->context->smarty->assign([
 				'message' => ''
 			]);
@@ -31,7 +32,8 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 			return;
 		}
 
-		if (!$this->validation_setting($config)) {
+		if(!$this->validation_setting($config))
+		{
 			$this->context->smarty->assign([
 				'message' => ''
 			]);
@@ -39,7 +41,8 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 			return;
 		}
 
-		if (!$this->validation_authorized()) {
+		if(!$this->validation_authorized())
+		{
 			$this->context->smarty->assign([
 				'message' => ''
 			]);
@@ -49,17 +52,18 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 
 		$customer = new Customer($cart->id_customer);
 
-		if (!$this->validation_customer($customer)) {
+		if(!$this->validation_customer($customer))
+		{
 			Tools::redirect('index.php?controller=order&step=1');
 			return;
 		}
-
+		
 		$link = $config['testing_mode'] ? $config['test_api_url'] : $config['api_url'];
-		$link .= 'web_cardinvoices';
+		$link .= 'web_cardinvoices'; 
 
 		$account_no = $cart->id;
 		$amount = $cart->getOrderTotal(true, Cart::BOTH);
-
+		
 
 		$currency = $this->context->currency;
 
@@ -72,29 +76,29 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 			$this->module->validateOrder((int)$cart->id, 10, $amount, $this->module->displayName, NULL, "", (int)$currency->id, false, $customer->secure_key);
 			$account_no = $this->module->currentOrder;
 		}*/
-
-		$amount = str_replace('.', ',', $amount);
+		 
+		$amount = str_replace('.',',', $amount);
 
 		if (!empty($control)) {
-			$cart = new Cart($control);
+            $cart = new Cart($control);
 		}
 
 		$request_params = array(
-			'ServiceId' => $config['service_id'],
-			'AccountNo' => $account_no,
-			'Amount' => $amount,
-			'Currency' => 933,
-			'Signature' => '',
-			'ReturnType' => 'redirect',
-			'ReturnUrl' => Tools::getShopDomainSsl(true, true) . __PS_BASE_URI__ . 'module/' . $this->module->name . '/validation?action=success',
-			'FailUrl' => Tools::getShopDomainSsl(true, true) . __PS_BASE_URI__ . 'module/' . $this->module->name . '/validation?action=fail',
-			'Info' => 'РћРїР»Р°С‚Р° С‚РѕРІР°РЅР° РІ РјР°РіР°Р·РёРЅРµ ' . Configuration::get('PS_SHOP_NAME')
-		);
+							'ServiceId' => $config['service_id'] ,
+							'AccountNo' => $account_no,
+							'Amount' => $amount,
+							'Currency' => 933,
+							'Signature' => '',
+							'ReturnType' => 'redirect',
+							'ReturnUrl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'module/'.$this->module->name.'/validation?action=success',
+							'FailUrl' => Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'module/'.$this->module->name.'/validation?action=fail',
+							'Info' => $config['info_message']						
+						);
 
 		$request_params['Signature'] = $this->compute_signature_add_invoice($config['token'], $request_params, $config['send_secret_word']);
-
+		
 		$this->context->smarty->assign([
-			'nbProducts' 		=> $cart->nbProducts(),
+            'nbProducts' 		=> $cart->nbProducts(),
 			'cust_currency' 	=> $cart->id_currency,
 			'currencies' 		=> $this->module->getCurrency((int)$cart->id_currency),
 			'total' 			=> $cart->getOrderTotal(true, Cart::BOTH),
@@ -102,13 +106,13 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 			'chequeName' 		=> $this->module->chequeName,
 			'chequeAddress' 	=> Tools::nl2br($this->module->address),
 			'this_path' 		=> $this->module->getPathUri(),
-			'this_path_ssl' 	=> Tools::getShopDomainSsl(true, true) . __PS_BASE_URI__ . 'module/' . $this->module->name . '/',
+			'this_path_ssl' 	=> Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'module/'.$this->module->name.'/',
 			'total' 			=> $cart->getOrderTotal(true, Cart::BOTH),
 			'currencies' 		=> $this->module->getCurrency((int)$cart->id_currency),
 			'image_path'		=> $this->module->getPathUri() . 'views/img/',
 			'action'			=> $link,
 			'request_param' 	=> $request_params,
-			'save_order_link' 	=> Tools::getShopDomainSsl(true, true) . __PS_BASE_URI__ . 'module/' . $this->module->name . '/validation?action=save_order',
+			'save_order_link' 	=> Tools::getShopDomainSsl(true, true).__PS_BASE_URI__.'module/'.$this->module->name.'/validation?action=save_order',
 			'create_order_after_payment' => $config['create_order_after_payment']
 		]);
 
@@ -117,7 +121,7 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 	}
 
 
-	private function compute_signature_add_invoice($token, $request_params, $secret_word)
+	private function compute_signature_add_invoice($token, $request_params, $secret_word) 
 	{
 		$secret_word = trim($secret_word);
 		$normalized_params = array_change_key_case($request_params, CASE_LOWER);
@@ -139,8 +143,7 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 		$result = $token;
 
 		foreach ($api_method as $item)
-			$result .= (isset($normalized_params[$item])) ? $normalized_params[$item] : '';
-
+			$result .= ( isset($normalized_params[$item]) ) ? $normalized_params[$item] : '';
 
 		$hash = strtoupper(hash_hmac('sha1', $result, $secret_word));
 
@@ -161,16 +164,18 @@ class expresspay_cardpaymentModuleFrontController extends ModuleFrontController
 	{
 		$authorized = false;
 		foreach (Module::getPaymentModules() as $module)
-			if ($module['name'] == 'expresspay_card') {
+			if ($module['name'] == 'expresspay_card')
+			{
 				$authorized = true;
 				break;
 			}
 
 		return $authorized;
 	}
-
+	
 	private function validation_customer($customer)
 	{
 		return Validate::isLoadedObject($customer);
 	}
+
 }
